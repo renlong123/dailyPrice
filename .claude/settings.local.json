@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(xcode-select -p)",
+      "Bash(npm install *)",
+      "Bash(npm config *)",
+      "Bash(ELECTRON_MIRROR=\"https://npmmirror.com/mirrors/electron/\" ELECTRON_CUSTOM_DIR=\"{{ version }}\" npm install --cache /tmp/npm-cache)",
+      "Bash(npx vite *)",
+      "Bash(timeout 8 npx electron .)",
+      "Bash(npx electron *)",
+      "Bash(node -e \"console.log\\(require\\('electron/package.json'\\).version\\)\")",
+      "Bash(./node_modules/.bin/electron /Users/renlong/每日开销/electron/test-main2.js)",
+      "Bash(ELECTRON_MIRROR=\"https://npmmirror.com/mirrors/electron/\" ELECTRON_CUSTOM_DIR=\"{{ version }}\" npm install electron@latest --save-dev)",
+      "Bash(ELECTRON_MIRROR=\"https://npmmirror.com/mirrors/electron/\" ELECTRON_CUSTOM_DIR=\"{{ version }}\" npm install electron@latest --save-dev --cache /tmp/npm-cache)",
+      "Bash(ELECTRON_MIRROR=\"https://npmmirror.com/mirrors/electron/\" ELECTRON_CUSTOM_DIR=\"{{ version }}\" npm install electron@33.4.0 --save-dev --cache /tmp/npm-cache)",
+      "Bash(./node_modules/.bin/electron -v)",
+      "Bash(./node_modules/.bin/electron /Users/renlong/每日开销/main-process/test-x.js)",
+      "Bash(./node_modules/.bin/electron /Users/renlong/每日开销/test-root.js)",
+      "WebSearch",
+      "Bash(./node_modules/.bin/electron /Users/renlong/每日开销/test-resolve.js)",
+      "WebFetch(domain:github.com)",
+      "Bash(codesign -dvvv \"/Users/renlong/每日开销/node_modules/electron/dist/Electron.app\")",
+      "Bash(# Clean up test files *)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(kill %1)",
+      "Bash(pkill -f \"vite\")",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ],
+    "additionalDirectories": [
+      "/Users/renlong/每日开销"
+    ]
+  }
+}
