@@ -26,10 +26,50 @@
       "Bash(kill %1)",
       "Bash(pkill -f \"vite\")",
       "Bash(git init *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m 'init: 每日开销 — 个人物品支出记录与日均成本计算 *)",
+      "Bash(ls -la /Users/renlong/.claude/ 2>/dev/null || echo \"no .claude dir\")",
+      "Read(//Users/renlong/.claude/**)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Read(//Users/renlong/**)",
+      "Bash(ssh -T git@github.com)",
+      "Bash(gh auth *)",
+      "Bash(git config *)",
+      "Bash(ssh-keygen -t ed25519 -C \"renlong@github\" -f ~/.ssh/id_ed25519 -N \"\")",
+      "Bash(git commit *)",
+      "Bash(npm run *)",
+      "Bash(git restore *)",
+      "Bash(mkdir -p /Users/renlong/每日开销/.claude/skills/monthly-review)",
+      "Bash(mkdir -p ~/.claude/skills/git-save)",
+      "Bash(mkdir -p /Users/renlong/每日开销/.claude/skills/unit-test)",
+      "Bash(mkdir -p /Users/renlong/每日开销/.claude/agents)",
+      "Bash(mkdir -p /Users/renlong/每日开销/.claude/skills/comment-check)",
+      "Bash(bash /Users/renlong/每日开销/.claude/hooks/pre-commit-test.sh)",
+      "Bash(rm -rf /Users/renlong/每日开销/.husky && echo \"deleted .husky\")",
+      "Bash(mkdir -p /Users/renlong/每日开销/.claude/hooks)",
+      "Bash(chmod +x /Users/renlong/每日开销/.claude/hooks/pre-commit-test.sh)",
+      "Bash(echo \"EXIT_CODE=$?\")"
     ],
     "additionalDirectories": [
-      "/Users/renlong/每日开销"
+      "/Users/renlong/每日开销",
+      "/Users/renlong/每日开销/.claude/skills",
+      "/Users/renlong/.claude/skills",
+      "/Users/renlong/每日开销/.claude"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/renlong/每日开销/.claude/hooks/pre-commit-test.sh"
+          }
+        ]
+      }
     ]
   }
 }
