@@ -1,11 +1,17 @@
 import type { Stats } from '../types'
 import type { DisplayFormat } from '../utils/format'
+import { formatMoney } from '../utils/format'
 
 interface StatsBarProps {
   stats: Stats
   displayFormat: DisplayFormat
   onToggleFormat: () => void
 }
+
+const FORMAT_OPTIONS = [
+  { key: 'ymd' as const, label: '1年3月' },
+  { key: 'days' as const, label: '400天' },
+]
 
 export default function StatsBar({ stats, displayFormat, onToggleFormat }: StatsBarProps) {
   return (
@@ -18,7 +24,7 @@ export default function StatsBar({ stats, displayFormat, onToggleFormat }: Stats
       <div className="p-3 bg-primary-50 rounded-xl">
         <p className="text-xs text-primary-600 mb-0.5">总消费</p>
         <p className="text-xl font-bold text-primary-700">
-          ¥{stats.totalSpent.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {formatMoney(stats.totalSpent)}
         </p>
       </div>
 
@@ -34,7 +40,7 @@ export default function StatsBar({ stats, displayFormat, onToggleFormat }: Stats
       <div className="p-3 bg-emerald-50 rounded-xl">
         <p className="text-xs text-emerald-600 mb-0.5">平均日均成本</p>
         <p className="text-xl font-bold text-emerald-700">
-          ¥{stats.avgDailyCost.toFixed(2)}
+          {formatMoney(stats.avgDailyCost)}
           <span className="text-xs font-normal text-emerald-500">/天</span>
         </p>
       </div>
@@ -48,24 +54,18 @@ export default function StatsBar({ stats, displayFormat, onToggleFormat }: Stats
             displayFormat === 'ymd' ? 'bg-primary-100' : 'bg-gray-200'
           }`}
         >
-          <span
-            className={`flex-1 py-1.5 rounded-md text-center font-medium transition-all ${
-              displayFormat === 'ymd'
-                ? 'bg-white text-primary-700 shadow-sm'
-                : 'text-gray-500'
-            }`}
-          >
-            1年3月
-          </span>
-          <span
-            className={`flex-1 py-1.5 rounded-md text-center font-medium transition-all ${
-              displayFormat === 'days'
-                ? 'bg-white text-primary-700 shadow-sm'
-                : 'text-gray-500'
-            }`}
-          >
-            400天
-          </span>
+          {FORMAT_OPTIONS.map((opt) => (
+            <span
+              key={opt.key}
+              className={`flex-1 py-1.5 rounded-md text-center font-medium transition-all ${
+                displayFormat === opt.key
+                  ? 'bg-white text-primary-700 shadow-sm'
+                  : 'text-gray-500'
+              }`}
+            >
+              {opt.label}
+            </span>
+          ))}
         </button>
       </div>
 

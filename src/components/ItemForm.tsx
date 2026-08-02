@@ -1,31 +1,42 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Item, ItemFormData, Category } from '../types'
+import { defaultEmojis } from '../utils/storage'
+import Modal from './Modal'
+import CategoryChip from './CategoryChip'
 
 interface ItemFormProps {
-  item: Item | null          // null = 新增模式，非 null = 编辑模式
+  item: Item | null
   categories: Category[]
   onSubmit: (data: ItemFormData) => Promise<void>
   onClose: () => void
   onAddCategory: (name: string, icon?: string) => Promise<Category>
 }
 
-// 新分类的默认 emoji 列表
-const emojiOptions = ['📱', '👔', '🏠', '🍔', '🚌', '🎮', '📦', '💊', '📚', '🎧', '💄', '⚽']
+/** 获取本地日期字符串（YYYY-MM-DD），不受 UTC 时区影响 */
+function getLocalDateStr(): string {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
 
 export default function ItemForm({ item, categories, onSubmit, onClose, onAddCategory }: ItemFormProps) {
   const isEdit = item !== null
 
   const [name, setName] = useState(item?.name || '')
   const [price, setPrice] = useState(item ? String(item.price) : '')
-  const [purchaseDate, setPurchaseDate] = useState(item?.purchaseDate || new Date().toISOString().split('T')[0])
+  const [purchaseDate, setPurchaseDate] = useState(item?.purchaseDate || getLocalDateStr())
   const [category, setCategory] = useState(item?.category || (categories[0]?.name || '其他'))
   const [notes, setNotes] = useState(item?.notes || '')
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // 新增分类
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCatName, setNewCatName] = useState('')
   const [newCatEmoji, setNewCatEmoji] = useState('📌')
+  const [addingCat, setAddingCat] = useState(false)
 
   const nameInputRef = useRef<HTMLInputElement>(null)
 
@@ -34,32 +45,41 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
     nameInputRef.current?.focus()
   }, [])
 
-  // 点击遮罩关闭
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose()
-    }
-  }
-
   // 提交表单
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
 
-    if (!name.trim()) return
+    if (!name.trim()) {
+      setError('请输入物品名称')
+      return
+    }
+
     const priceNum = parseFloat(price)
-    if (isNaN(priceNum) || priceNum <= 0) return
+
+    // 拒绝非数字、非正数、科学计数法
+    if (isNaN(priceNum) || priceNum <= 0) {
+      setError('请输入有效的价格')
+      return
+    }
+    // 拒绝科学计数法（如 1e5）—— 这些不应被视为有效价格
+    if (/[eE]/.test(price)) {
+      setError('价格格式不正确，请输入数字')
+      return
+    }
 
     setSubmitting(true)
     try {
       await onSubmit({
         name: name.trim(),
-        price: priceNum,
+        price: Math.round(priceNum * 100) / 100,
         purchaseDate,
         category,
         notes: notes.trim(),
       })
     } catch (err) {
       console.error('保存失败:', err)
+      setError(err instanceof Error ? err.message : '保存失败，请重试')
       setSubmitting(false)
     }
   }
@@ -67,6 +87,7 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
   // 添加新分类
   const handleAddCategory = async () => {
     if (!newCatName.trim()) return
+    setAddingCat(true)
     try {
       const newCat = await onAddCategory(newCatName.trim(), newCatEmoji)
       setCategory(newCat.name)
@@ -74,17 +95,16 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
       setNewCatName('')
       setNewCatEmoji('📌')
     } catch (err) {
-      console.error('添加分类失败:', err)
+      setError(err instanceof Error ? err.message : '添加分类失败')
+    } finally {
+      setAddingCat(false)
     }
   }
 
-  const isValid = name.trim() && parseFloat(price) > 0
+  const isValid = name.trim().length > 0 && parseFloat(price) > 0 && !/[eE]/.test(price)
 
   return (
-    <div
-      className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
-      onClick={handleBackdropClick}
-    >
+    <Modal onClose={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
         {/* 标题栏 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -103,6 +123,13 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
 
         {/* 表单 */}
         <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
+          {/* 错误提示 */}
+          {error && (
+            <div className="p-2.5 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
+              {error}
+            </div>
+          )}
+
           {/* 物品名称 */}
           <label className="flex flex-col gap-1">
             <span className="text-xs font-medium text-gray-500">物品名称</span>
@@ -148,22 +175,14 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
           <div className="flex flex-col gap-1">
             <span className="text-xs font-medium text-gray-500">分类</span>
 
-            {/* 已有分类 */}
             <div className="flex flex-wrap gap-2">
               {categories.map((cat) => (
-                <button
+                <CategoryChip
                   key={cat.id}
-                  type="button"
+                  category={cat}
+                  selected={category === cat.name}
                   onClick={() => setCategory(cat.name)}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                    category === cat.name
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <span>{cat.icon}</span>
-                  <span>{cat.name}</span>
-                </button>
+                />
               ))}
 
               {/* 添加新分类按钮 */}
@@ -182,22 +201,19 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
             {/* 新建分类面板 */}
             {showNewCategory && (
               <div className="mt-2 p-3 bg-gray-50 rounded-lg flex flex-col gap-2">
-                <div className="flex gap-2">
-                  {/* Emoji 选择 */}
-                  <div className="flex flex-wrap gap-1">
-                    {emojiOptions.map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        onClick={() => setNewCatEmoji(emoji)}
-                        className={`w-7 h-7 flex items-center justify-center rounded text-sm transition-colors ${
-                          newCatEmoji === emoji ? 'bg-primary-200 ring-1 ring-primary-400' : 'hover:bg-gray-200'
-                        }`}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex flex-wrap gap-1">
+                  {defaultEmojis.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setNewCatEmoji(emoji)}
+                      className={`w-7 h-7 flex items-center justify-center rounded text-sm transition-colors ${
+                        newCatEmoji === emoji ? 'bg-primary-200 ring-1 ring-primary-400' : 'hover:bg-gray-200'
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
                 </div>
                 <div className="flex gap-2">
                   <input
@@ -210,10 +226,10 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
                   <button
                     type="button"
                     onClick={handleAddCategory}
-                    disabled={!newCatName.trim()}
+                    disabled={!newCatName.trim() || addingCat}
                     className="px-3 py-1.5 bg-primary-500 text-white text-xs font-medium rounded hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    添加
+                    {addingCat ? '添加中...' : '添加'}
                   </button>
                 </div>
               </div>
@@ -251,6 +267,6 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
           </div>
         </form>
       </div>
-    </div>
+    </Modal>
   )
 }

@@ -1,9 +1,9 @@
 import type { Item, ItemFormData, Category } from '../types'
 
-const STORAGE_KEY = 'daily-expense-data'
+export const STORAGE_KEY = 'daily-expense-data'
 
 // ========== 默认分类 ==========
-const defaultCategories: Category[] = [
+export const defaultCategories: Category[] = [
   { id: 1, name: '电子设备', icon: '📱' },
   { id: 2, name: '衣物', icon: '👔' },
   { id: 3, name: '家居', icon: '🏠' },
@@ -13,22 +13,35 @@ const defaultCategories: Category[] = [
   { id: 7, name: '其他', icon: '📦' },
 ]
 
+/** 默认分类的 emoji 列表，供 ItemForm 使用 */
+export const defaultEmojis = defaultCategories.map((c) => c.icon)
+
+/** 新增分类的默认图标 */
+export const DEFAULT_CATEGORY_ICON = '📌'
+
 // ========== 数据结构 ==========
-interface StoreData {
+export interface StoreData {
   items: Item[]
   categories: Category[]
   nextId: number
 }
 
-function loadData(): StoreData {
+/** 一次性加载整个 store，避免多次 JSON.parse */
+export function loadStore(): StoreData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const data = JSON.parse(raw) as StoreData
       return {
-        items: data.items || [],
-        categories: data.categories && data.categories.length > 0 ? data.categories : [...defaultCategories],
-        nextId: data.nextId || 1,
+        items: Array.isArray(data.items) ? data.items : [],
+        categories: Array.isArray(data.categories) && data.categories.length > 0
+          ? data.categories
+          : [...defaultCategories],
+        nextId: typeof data.nextId === 'number' && data.nextId > 0
+          ? data.nextId
+          : (Array.isArray(data.items) && data.items.length > 0
+            ? Math.max(...data.items.map((i) => i.id)) + 1
+            : 1),
       }
     }
   } catch (err) {
@@ -37,80 +50,98 @@ function loadData(): StoreData {
   return { items: [], categories: [...defaultCategories], nextId: 1 }
 }
 
-function saveData(data: StoreData): void {
+/** 保存 store，返回是否成功 */
+export function saveStore(data: StoreData): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    return true
   } catch (err) {
     console.error('保存数据失败:', err)
+    return false
   }
 }
 
 // ========== 物品 CRUD ==========
+
 export function getItems(category?: string): Item[] {
-  const data = loadData()
-  let items = [...data.items]
+  const store = loadStore()
+  let items = store.items
   if (category) {
     items = items.filter((i) => i.category === category)
   }
-  items.sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime())
+  items.sort((a, b) => {
+    const da = new Date(a.purchaseDate + 'T00:00:00').getTime()
+    const db = new Date(b.purchaseDate + 'T00:00:00').getTime()
+    return db - da
+  })
   return items
 }
 
-export function addItem(item: ItemFormData): Item {
-  const data = loadData()
+export function addItem(item: ItemFormData): { item: Item; store: StoreData } {
+  const store = loadStore()
   const newItem: Item = {
-    id: data.nextId++,
+    id: store.nextId++,
     name: item.name,
-    price: Number(item.price),
+    price: Math.round(Number(item.price) * 100) / 100,
     purchaseDate: item.purchaseDate,
     category: item.category || '其他',
     notes: item.notes || '',
   }
-  data.items.push(newItem)
-  saveData(data)
-  return newItem
+  store.items.push(newItem)
+  saveStore(store)
+  return { item: newItem, store }
 }
 
-export function updateItem(id: number, updates: ItemFormData): void {
-  const data = loadData()
-  const index = data.items.findIndex((i) => i.id === id)
+export function updateItem(id: number, updates: ItemFormData): { store: StoreData } {
+  const store = loadStore()
+  const index = store.items.findIndex((i) => i.id === id)
   if (index === -1) throw new Error(`物品 ID ${id} 不存在`)
-  data.items[index] = {
-    ...data.items[index],
+  store.items[index] = {
+    ...store.items[index],
     name: updates.name,
-    price: Number(updates.price),
+    price: Math.round(Number(updates.price) * 100) / 100,
     purchaseDate: updates.purchaseDate,
     category: updates.category || '其他',
     notes: updates.notes || '',
   }
-  saveData(data)
+  saveStore(store)
+  return { store }
 }
 
-export function deleteItem(id: number): void {
-  const data = loadData()
-  const index = data.items.findIndex((i) => i.id === id)
+export function deleteItem(id: number): { store: StoreData } {
+  const store = loadStore()
+  const index = store.items.findIndex((i) => i.id === id)
   if (index === -1) throw new Error(`物品 ID ${id} 不存在`)
-  data.items.splice(index, 1)
-  saveData(data)
+  store.items.splice(index, 1)
+  saveStore(store)
+  return { store }
 }
 
 // ========== 分类管理 ==========
+
 export function getCategories(): Category[] {
-  const data = loadData()
-  return [...data.categories]
+  const store = loadStore()
+  return store.categories
 }
 
-export function addCategory(name: string, icon?: string): Category {
-  const data = loadData()
-  const maxId = data.categories.length > 0
-    ? Math.max(...data.categories.map((c) => c.id))
+export function addCategory(name: string, icon?: string): { category: Category; store: StoreData } {
+  const store = loadStore()
+
+  // 检查分类名是否已存在（按名称去重）
+  const existing = store.categories.find((c) => c.name === name)
+  if (existing) {
+    throw new Error(`分类「${name}」已存在`)
+  }
+
+  const maxId = store.categories.length > 0
+    ? Math.max(...store.categories.map((c) => c.id))
     : 0
   const newCategory: Category = {
     id: maxId + 1,
     name,
-    icon: icon || '📌',
+    icon: icon || DEFAULT_CATEGORY_ICON,
   }
-  data.categories.push(newCategory)
-  saveData(data)
-  return newCategory
+  store.categories.push(newCategory)
+  saveStore(store)
+  return { category: newCategory, store }
 }

@@ -6,12 +6,13 @@ interface ItemListProps {
   items: Item[]
   loading: boolean
   displayFormat: DisplayFormat
+  selectedCategory: string
   onEdit: (item: Item) => void
   onDelete: (item: Item) => void
   onAdd: () => void
 }
 
-export default function ItemList({ items, loading, displayFormat, onEdit, onDelete, onAdd }: ItemListProps) {
+export default function ItemList({ items, loading, displayFormat, selectedCategory, onEdit, onDelete, onAdd }: ItemListProps) {
   // 加载中
   if (loading) {
     return (
@@ -27,7 +28,28 @@ export default function ItemList({ items, loading, displayFormat, onEdit, onDele
     )
   }
 
-  // 空状态
+  // 当前筛选下为空，但全局有数据
+  if (items.length === 0 && selectedCategory) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-gray-400">
+          <span className="text-5xl">🔍</span>
+          <div className="text-center">
+            <p className="text-sm font-medium text-gray-500">该分类下暂无物品</p>
+            <p className="text-xs text-gray-400 mt-1">试试切换到「全部」或其他分类</p>
+          </div>
+          <button
+            onClick={onAdd}
+            className="px-4 py-2 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors shadow-sm"
+          >
+            添加物品
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // 全局空状态
   if (items.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -57,8 +79,8 @@ export default function ItemList({ items, loading, displayFormat, onEdit, onDele
             key={item.id}
             item={item}
             displayFormat={displayFormat}
-            onEdit={() => onEdit(item)}
-            onDelete={() => onDelete(item)}
+            onEdit={onEdit}
+            onDelete={onDelete}
           />
         ))}
       </div>

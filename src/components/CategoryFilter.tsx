@@ -1,4 +1,5 @@
 import type { Category } from '../types'
+import CategoryChip from './CategoryChip'
 
 interface CategoryFilterProps {
   categories: Category[]
@@ -21,20 +22,14 @@ export default function CategoryFilter({ categories, selected, onSelect }: Categ
         全部
       </button>
 
-      {/* 分类按钮 */}
+      {/* 分类标签 — 使用共用 CategoryChip */}
       {categories.map((cat) => (
-        <button
+        <CategoryChip
           key={cat.id}
+          category={cat}
+          selected={selected === cat.name}
           onClick={() => onSelect(cat.name)}
-          className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-            selected === cat.name
-              ? 'bg-primary-500 text-white shadow-sm'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          <span>{cat.icon}</span>
-          <span>{cat.name}</span>
-        </button>
+        />
       ))}
     </div>
   )

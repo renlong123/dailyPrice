@@ -1,3 +1,5 @@
+import Modal from './Modal'
+
 interface DeleteConfirmProps {
   itemName: string
   onConfirm: () => void
@@ -6,10 +8,7 @@ interface DeleteConfirmProps {
 
 export default function DeleteConfirm({ itemName, onConfirm, onCancel }: DeleteConfirmProps) {
   return (
-    <div
-      className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
-      onClick={onCancel}
-    >
+    <Modal onClose={onCancel}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
         <div className="text-center mb-5">
           <span className="text-4xl">⚠️</span>
@@ -34,6 +33,6 @@ export default function DeleteConfirm({ itemName, onConfirm, onCancel }: DeleteC
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }

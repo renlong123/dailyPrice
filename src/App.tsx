@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useItems } from './hooks/useItems'
-import type { Item, ItemFormData, Category } from './types'
+import type { Item, ItemFormData } from './types'
 import type { DisplayFormat } from './utils/format'
 import Layout from './components/Layout'
 import StatsBar from './components/StatsBar'
@@ -21,11 +21,13 @@ function loadFormat(): DisplayFormat {
       }
     }
   } catch { /* ignore */ }
-  return 'ymd' // 默认：按年月日展示
+  return 'ymd'
 }
 
 function saveFormat(format: DisplayFormat) {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify({ displayFormat: format }))
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ displayFormat: format }))
+  } catch { /* 存储满或隐私模式下忽略，不影响主功能 */ }
 }
 
 export default function App() {
@@ -40,7 +42,6 @@ export default function App() {
     updateItem,
     deleteItem,
     addCategory,
-    refresh,
   } = useItems()
 
   // 时间展示格式
@@ -54,54 +55,55 @@ export default function App() {
     setDisplayFormat((prev) => (prev === 'ymd' ? 'days' : 'ymd'))
   }, [])
 
-  // 表单弹窗状态
-  const [showForm, setShowForm] = useState(false)
-  const [editingItem, setEditingItem] = useState<Item | null>(null)
+  // 表单弹窗状态 — 合并为单一状态避免不同步
+  const [formState, setFormState] = useState<{ open: boolean; item: Item | null }>({ open: false, item: null })
 
   // 删除确认弹窗状态
   const [deleteTarget, setDeleteTarget] = useState<Item | null>(null)
 
+  // 错误提示
+  const [error, setError] = useState<string | null>(null)
+
   // 打开新增表单
   const handleAdd = useCallback(() => {
-    setEditingItem(null)
-    setShowForm(true)
+    setFormState({ open: true, item: null })
   }, [])
 
   // 打开编辑表单
   const handleEdit = useCallback((item: Item) => {
-    setEditingItem(item)
-    setShowForm(true)
+    setFormState({ open: true, item })
   }, [])
 
   // 提交表单（新增或编辑）
   const handleSubmit = useCallback(async (formData: ItemFormData) => {
-    if (editingItem) {
-      await updateItem(editingItem.id, formData)
+    if (formState.item) {
+      await updateItem(formState.item.id, formData)
     } else {
-      await addItem(formData)
+      const newItem = await addItem(formData)
+      // 如果添加的物品不属于当前筛选分类，自动切换到「全部」
+      if (newItem && selectedCategory && newItem.category !== selectedCategory) {
+        setSelectedCategory('')
+      }
     }
-    setShowForm(false)
-    setEditingItem(null)
-  }, [editingItem, addItem, updateItem])
+    setFormState({ open: false, item: null })
+  }, [formState.item, addItem, updateItem, selectedCategory, setSelectedCategory])
 
   // 关闭表单
   const handleCloseForm = useCallback(() => {
-    setShowForm(false)
-    setEditingItem(null)
+    setFormState({ open: false, item: null })
   }, [])
 
-  // 确认删除
+  // 确认删除（增加错误处理）
   const handleDeleteConfirm = useCallback(async () => {
-    if (deleteTarget) {
+    if (!deleteTarget) return
+    try {
       await deleteItem(deleteTarget.id)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '删除失败')
+    } finally {
       setDeleteTarget(null)
     }
   }, [deleteTarget, deleteItem])
-
-  // 处理新建分类
-  const handleAddCategory = useCallback(async (name: string, icon?: string) => {
-    return await addCategory(name, icon)
-  }, [addCategory])
 
   return (
     <Layout onAdd={handleAdd}>
@@ -122,6 +124,7 @@ export default function App() {
           items={items}
           loading={loading}
           displayFormat={displayFormat}
+          selectedCategory={selectedCategory}
           onEdit={handleEdit}
           onDelete={setDeleteTarget}
           onAdd={handleAdd}
@@ -129,13 +132,13 @@ export default function App() {
       </div>
 
       {/* 新增/编辑物品弹窗 */}
-      {showForm && (
+      {formState.open && (
         <ItemForm
-          item={editingItem}
+          item={formState.item}
           categories={categories}
           onSubmit={handleSubmit}
           onClose={handleCloseForm}
-          onAddCategory={handleAddCategory}
+          onAddCategory={addCategory}
         />
       )}
 
@@ -146,6 +149,22 @@ export default function App() {
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteTarget(null)}
         />
+      )}
+
+      {/* 错误提示 */}
+      {error && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-xs mx-4 p-5 text-center">
+            <span className="text-2xl">😞</span>
+            <p className="text-sm text-gray-600 mt-2 mb-4">{error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="px-4 py-2 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors"
+            >
+              知道了
+            </button>
+          </div>
+        </div>
       )}
     </Layout>
   )

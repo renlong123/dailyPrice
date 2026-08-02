@@ -1,36 +1,18 @@
+import { memo } from 'react'
 import type { Item } from '../types'
 import type { DisplayFormat } from '../utils/format'
-import { getDaysUsed, formatDaysAsYMD } from '../utils/format'
-
-// 格式化日期为中文
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr)
-  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
-}
-
-// 分类颜色映射
-const categoryColors: Record<string, string> = {
-  '电子设备': 'bg-blue-100 text-blue-700',
-  '衣物': 'bg-pink-100 text-pink-700',
-  '家居': 'bg-amber-100 text-amber-700',
-  '食品': 'bg-green-100 text-green-700',
-  '交通': 'bg-indigo-100 text-indigo-700',
-  '娱乐': 'bg-purple-100 text-purple-700',
-  '其他': 'bg-gray-100 text-gray-600',
-}
+import { getDaysUsed, getDailyCost, formatDaysAsYMD, formatDate, formatMoney } from '../utils/format'
 
 interface ItemCardProps {
   item: Item
   displayFormat: DisplayFormat
-  onEdit: () => void
-  onDelete: () => void
+  onEdit: (item: Item) => void
+  onDelete: (item: Item) => void
 }
 
-export default function ItemCard({ item, displayFormat, onEdit, onDelete }: ItemCardProps) {
+export default memo(function ItemCard({ item, displayFormat, onEdit, onDelete }: ItemCardProps) {
   const daysUsed = getDaysUsed(item.purchaseDate)
-  const dailyCost = daysUsed > 0 ? item.price / daysUsed : item.price
-
-  const catColor = categoryColors[item.category] || 'bg-gray-100 text-gray-600'
+  const dailyCost = getDailyCost(item.price, item.purchaseDate)
 
   // 根据展示格式生成使用时间文本
   const usageText = displayFormat === 'ymd'
@@ -45,7 +27,7 @@ export default function ItemCard({ item, displayFormat, onEdit, onDelete }: Item
           {/* 第一行：名称 + 分类标签 */}
           <div className="flex items-center gap-2 mb-2">
             <h3 className="text-sm font-semibold text-gray-800 truncate">{item.name}</h3>
-            <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${catColor}`}>
+            <span className="shrink-0 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
               {item.category}
             </span>
           </div>
@@ -70,7 +52,7 @@ export default function ItemCard({ item, displayFormat, onEdit, onDelete }: Item
             <span className="inline-flex items-center gap-1 text-xs">
               <span className="text-gray-400">日均</span>
               <span className="font-semibold text-emerald-600">
-                ¥{dailyCost.toFixed(2)}
+                {formatMoney(dailyCost)}
               </span>
             </span>
           </div>
@@ -79,20 +61,20 @@ export default function ItemCard({ item, displayFormat, onEdit, onDelete }: Item
         {/* 右侧：价格 + 操作按钮 */}
         <div className="flex flex-col items-end gap-2 shrink-0">
           <span className="text-lg font-bold text-gray-800">
-            ¥{item.price.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {formatMoney(item.price)}
           </span>
 
           {/* 操作按钮 — hover 时显示 */}
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
-              onClick={onEdit}
+              onClick={() => onEdit(item)}
               className="px-2 py-1 text-xs text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
               title="编辑"
             >
               ✏️
             </button>
             <button
-              onClick={onDelete}
+              onClick={() => onDelete(item)}
               className="px-2 py-1 text-xs text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
               title="删除"
             >
@@ -103,4 +85,4 @@ export default function ItemCard({ item, displayFormat, onEdit, onDelete }: Item
       </div>
     </div>
   )
-}
+})

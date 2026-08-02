@@ -145,7 +145,8 @@
 │   ├── types/
 │   │   └── index.ts           # TypeScript 类型定义
 │   ├── utils/
-│   │   └── storage.ts         # localStorage 数据层（CRUD 操作）
+│   │   ├── storage.ts         # localStorage 数据层（CRUD 操作）
+│   │   └── format.ts          # 日期/金额格式化工具
 │   ├── hooks/
 │   │   └── useItems.ts        # 自定义 Hook（数据加载、状态管理）
 │   └── components/
@@ -155,7 +156,9 @@
 │       ├── ItemCard.tsx       # 单个物品卡片（含计算逻辑）
 │       ├── ItemForm.tsx       # 添加/编辑物品弹窗
 │       ├── CategoryFilter.tsx # 分类筛选条
-│       └── DeleteConfirm.tsx  # 删除确认弹窗
+│       ├── DeleteConfirm.tsx  # 删除确认弹窗
+│       ├── Modal.tsx          # 共用模态弹窗（遮罩 + Esc 关闭）
+│       └── CategoryChip.tsx   # 共用分类标签
 ```
 
 ---
