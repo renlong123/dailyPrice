@@ -104,6 +104,8 @@ export default function App() {
           onToggleFormat={toggleFormat}
           showSold={expenseData.showSold}
           setShowSold={expenseData.setShowSold}
+          sortBy={expenseData.sortBy}
+          setSortBy={expenseData.setSortBy}
           addItem={expenseData.addItem}
           updateItem={expenseData.updateItem}
           deleteItem={safeDeleteItem}

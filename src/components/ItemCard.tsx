@@ -12,8 +12,10 @@ interface ItemCardProps {
 
 export default memo(function ItemCard({ item, displayFormat, onEdit, onDelete }: ItemCardProps) {
   const isSold = item.status === 'sold'
-  const daysUsed = getDaysUsed(item.purchaseDate)
-  const dailyCost = getDailyCost(item.price, item.purchaseDate)
+  // 已卖出：基于购买→卖出期间计算；使用中：基于购买→今天
+  const endDate = isSold ? item.soldDate : undefined
+  const daysUsed = getDaysUsed(item.purchaseDate, endDate)
+  const dailyCost = getDailyCost(item.price, item.purchaseDate, endDate)
 
   const usageText = displayFormat === 'ymd'
     ? formatDaysAsYMD(item.purchaseDate)
@@ -59,8 +61,10 @@ export default memo(function ItemCard({ item, displayFormat, onEdit, onDelete }:
             {isSold ? (
               <>
                 <span className="inline-flex items-center gap-1 text-xs text-gray-500">
-                  <span className="text-gray-400">使用</span>
-                  <span className="font-semibold text-gray-700">{usageText}</span>
+                  <span className="text-gray-400">使用{daysUsed}天</span>
+                  <span className="text-gray-300">·</span>
+                  <span className="text-gray-500">日均</span>
+                  <span className="font-semibold text-amber-600">{formatMoney(dailyCost)}</span>
                 </span>
                 <span className="text-gray-300">|</span>
                 <span className="inline-flex items-center gap-1 text-xs">
@@ -68,6 +72,9 @@ export default memo(function ItemCard({ item, displayFormat, onEdit, onDelete }:
                   <span className="font-semibold text-amber-600">
                     {formatMoney(item.sellPrice!)}
                   </span>
+                  {item.soldDate && (
+                    <span className="text-gray-400 ml-0.5">({item.soldDate})</span>
+                  )}
                 </span>
                 <span className="text-gray-300">|</span>
                 <span className={`text-xs font-semibold ${profit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>

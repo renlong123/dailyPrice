@@ -30,6 +30,7 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
   const [category, setCategory] = useState(item?.category || (categories[0]?.name || '其他'))
   const [status, setStatus] = useState<'active' | 'sold'>(item?.status || 'active')
   const [sellPrice, setSellPrice] = useState(item?.sellPrice != null ? String(item.sellPrice) : '')
+  const [soldDate, setSoldDate] = useState(item?.soldDate || getLocalDateStr())
   const [notes, setNotes] = useState(item?.notes || '')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -85,6 +86,7 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
         category,
         status,
         sellPrice: sellPriceNum != null ? Math.round(sellPriceNum * 100) / 100 : undefined,
+        soldDate: status === 'sold' ? soldDate : undefined,
         notes: notes.trim(),
       })
     } catch (err) {
@@ -267,23 +269,36 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
             </div>
           </div>
 
-          {/* 卖出价格（仅已卖出时显示） */}
+          {/* 卖出价格 + 卖出日期（仅已卖出时显示） */}
           {status === 'sold' && (
-            <label className="flex flex-col gap-1">
-              <span className="text-xs font-medium text-gray-500">卖出价格（元）</span>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">¥</span>
-                <input
-                  type="number"
-                  value={sellPrice}
-                  onChange={(e) => setSellPrice(e.target.value)}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0.01"
-                  className="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow"
-                />
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-gray-500">卖出价格（元）</span>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">¥</span>
+                    <input
+                      type="number"
+                      value={sellPrice}
+                      onChange={(e) => setSellPrice(e.target.value)}
+                      placeholder="0.00"
+                      step="0.01"
+                      min="0.01"
+                      className="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow"
+                    />
+                  </div>
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-gray-500">卖出日期</span>
+                  <input
+                    type="date"
+                    value={soldDate}
+                    onChange={(e) => setSoldDate(e.target.value)}
+                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow"
+                  />
+                </label>
               </div>
-            </label>
+            </>
           )}
 
           {/* 备注 */}

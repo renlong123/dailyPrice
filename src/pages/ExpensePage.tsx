@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import type { Item, ItemFormData, Category, Stats } from '../types'
+import type { Item, ItemFormData, Category, Stats, SortBy } from '../types'
 import type { DisplayFormat } from '../utils/format'
 import StatsBar from '../components/StatsBar'
 import ItemList from '../components/ItemList'
@@ -18,6 +18,8 @@ interface ExpensePageProps {
   onToggleFormat: () => void
   showSold: boolean
   setShowSold: (show: boolean) => void
+  sortBy: SortBy
+  setSortBy: (sort: SortBy) => void
   addItem: (data: ItemFormData) => Promise<Item>
   updateItem: (id: number, data: ItemFormData) => Promise<void>
   deleteItem: (id: number) => Promise<void>
@@ -27,6 +29,7 @@ interface ExpensePageProps {
 export default function ExpensePage({
   items, categories, selectedCategory, setSelectedCategory, loading, stats,
   displayFormat, onToggleFormat, showSold, setShowSold,
+  sortBy, setSortBy,
   addItem, updateItem, deleteItem, addCategory,
 }: ExpensePageProps) {
   const [formState, setFormState] = useState<{ open: boolean; item: Item | null }>({ open: false, item: null })
@@ -62,7 +65,28 @@ export default function ExpensePage({
       <div className="flex-1 flex flex-col min-w-0">
         {/* 页面标题栏 */}
         <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-100 shrink-0">
-          <h2 className="text-base font-semibold text-gray-800">💰 物品列表</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-base font-semibold text-gray-800">💰 物品列表</h2>
+            {/* 排序切换 */}
+            <div className="flex items-center rounded-lg bg-gray-100 p-0.5 text-xs">
+              <button
+                onClick={() => setSortBy('dailyCost')}
+                className={`px-2.5 py-1 rounded-md font-medium transition-all ${
+                  sortBy === 'dailyCost' ? 'bg-white text-primary-700 shadow-sm' : 'text-gray-500'
+                }`}
+              >
+                按每日成本
+              </button>
+              <button
+                onClick={() => setSortBy('purchaseDate')}
+                className={`px-2.5 py-1 rounded-md font-medium transition-all ${
+                  sortBy === 'purchaseDate' ? 'bg-white text-primary-700 shadow-sm' : 'text-gray-500'
+                }`}
+              >
+                按购买日期
+              </button>
+            </div>
+          </div>
           <button
             onClick={handleAdd}
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors shadow-sm"

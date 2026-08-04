@@ -10,6 +10,7 @@ export interface Item {
   category: string
   status: ItemStatus    // 使用中 / 已卖出
   sellPrice?: number    // 卖出价格（仅 status=sold 时有意义）
+  soldDate?: string     // 卖出日期（仅 status=sold 时有意义）
   notes: string
 }
 
@@ -21,8 +22,12 @@ export interface ItemFormData {
   category: string
   status: ItemStatus
   sellPrice?: number
+  soldDate?: string
   notes: string
 }
+
+/** 排序方式 */
+export type SortBy = 'dailyCost' | 'purchaseDate'
 
 // ========== 分类 ==========
 export interface Category {

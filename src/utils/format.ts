@@ -13,20 +13,23 @@ function getTodayLocal(): Date {
 }
 
 /**
- * 计算从购买日期到今天的天数
+ * 计算从购买日期到结束日期的天数，不传 endDate 则到今天
  */
-export function getDaysUsed(purchaseDate: string): number {
+export function getDaysUsed(purchaseDate: string, endDate?: string): number {
   const purchase = parseLocalDate(purchaseDate)
-  const today = getTodayLocal()
-  const diffMs = today.getTime() - purchase.getTime()
+  const end = endDate ? parseLocalDate(endDate) : getTodayLocal()
+  const diffMs = end.getTime() - purchase.getTime()
   return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)))
 }
 
 /**
- * 计算日均成本（当天购买时 = 物品价格）
+ * 计算日均成本
+ * - 已卖出：基于购买→卖出期间
+ * - 使用中：基于购买→今天
+ * - 当天购买/卖出时 = 物品价格
  */
-export function getDailyCost(price: number, purchaseDate: string): number {
-  const days = getDaysUsed(purchaseDate)
+export function getDailyCost(price: number, purchaseDate: string, endDate?: string): number {
+  const days = getDaysUsed(purchaseDate, endDate)
   return days > 0 ? price / days : price
 }
 

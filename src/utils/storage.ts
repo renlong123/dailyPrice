@@ -90,6 +90,7 @@ export function addItem(item: ItemFormData): { item: Item; store: StoreData } {
     category: item.category || '其他',
     status,
     sellPrice: status === 'sold' && item.sellPrice != null ? Math.round(Number(item.sellPrice) * 100) / 100 : undefined,
+    soldDate: status === 'sold' ? (item.soldDate || undefined) : undefined,
     notes: item.notes || '',
   }
   store.items.push(newItem)
@@ -110,6 +111,7 @@ export function updateItem(id: number, updates: ItemFormData): { store: StoreDat
     category: updates.category || '其他',
     status,
     sellPrice: status === 'sold' && updates.sellPrice != null ? Math.round(Number(updates.sellPrice) * 100) / 100 : undefined,
+    soldDate: status === 'sold' ? (updates.soldDate || undefined) : undefined,
     notes: updates.notes || '',
   }
   saveStore(store)

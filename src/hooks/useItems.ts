@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import type { Item, Category, ItemFormData, Stats } from '../types'
+import type { Item, Category, ItemFormData, Stats, SortBy } from '../types'
 import {
   loadStore,
   addItem as storageAddItem,
@@ -35,7 +35,8 @@ export function useItems() {
   const [allItems, setAllItems] = useState<Item[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('')
-  const [showSold, setShowSold] = useState(false)  // 是否显示已卖出物品
+  const [showSold, setShowSold] = useState(false)
+  const [sortBy, setSortBy] = useState<SortBy>('dailyCost')  // 默认按每日成本降序
   const [loading, setLoading] = useState(true)
 
   const loadData = useCallback(() => {
@@ -73,12 +74,25 @@ export function useItems() {
     if (selectedCategory) {
       result = result.filter((i) => i.category === selectedCategory)
     }
-    return [...result].sort((a, b) => {
-      const da = new Date(a.purchaseDate + 'T00:00:00').getTime()
-      const db = new Date(b.purchaseDate + 'T00:00:00').getTime()
-      return db - da
-    })
-  }, [allItems, selectedCategory, showSold])
+
+    // 排序
+    const sorted = [...result]
+    if (sortBy === 'purchaseDate') {
+      sorted.sort((a, b) => {
+        const da = new Date(a.purchaseDate + 'T00:00:00').getTime()
+        const db = new Date(b.purchaseDate + 'T00:00:00').getTime()
+        return db - da
+      })
+    } else {
+      // 按每日成本降序
+      sorted.sort((a, b) => {
+        const costA = getDailyCost(a.price, a.purchaseDate, a.soldDate)
+        const costB = getDailyCost(b.price, b.purchaseDate, b.soldDate)
+        return costB - costA
+      })
+    }
+    return sorted
+  }, [allItems, selectedCategory, showSold, sortBy])
 
   // 统计数据始终基于使用中的物品
   const stats = useMemo(() => computeStats(allItems), [allItems])
@@ -116,6 +130,8 @@ export function useItems() {
     setSelectedCategory,
     showSold,
     setShowSold,
+    sortBy,
+    setSortBy,
     loading,
     stats,
     addItem,
