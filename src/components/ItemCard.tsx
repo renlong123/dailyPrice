@@ -15,13 +15,15 @@ export default memo(function ItemCard({ item, displayFormat, onEdit, onDelete }:
   // 已卖出：基于购买→卖出期间计算；使用中：基于购买→今天
   const endDate = isSold ? item.soldDate : undefined
   const daysUsed = getDaysUsed(item.purchaseDate, endDate)
-  const dailyCost = getDailyCost(item.price, item.purchaseDate, endDate)
+  // 已卖出：净成本 = 购买价 - 卖出价；使用中：购买价
+  const netCost = isSold && item.sellPrice != null ? item.price - item.sellPrice : item.price
+  const dailyCost = daysUsed > 0 ? netCost / daysUsed : netCost
 
   const usageText = displayFormat === 'ymd'
     ? formatDaysAsYMD(item.purchaseDate)
     : `${daysUsed}天`
 
-  // 卖出收益
+  // 卖出收益（卖出价 - 购买价，正=赚，负=亏）
   const profit = isSold && item.sellPrice != null
     ? item.sellPrice - item.price
     : 0
@@ -61,7 +63,8 @@ export default memo(function ItemCard({ item, displayFormat, onEdit, onDelete }:
             {isSold ? (
               <>
                 <span className="inline-flex items-center gap-1 text-xs text-gray-500">
-                  <span className="text-gray-400">使用{daysUsed}天</span>
+                  <span className="text-gray-400">使用</span>
+                  <span className="font-semibold text-gray-700">{usageText}</span>
                   <span className="text-gray-300">·</span>
                   <span className="text-gray-500">日均</span>
                   <span className="font-semibold text-amber-600">{formatMoney(dailyCost)}</span>
