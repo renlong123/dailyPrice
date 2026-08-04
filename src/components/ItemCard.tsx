@@ -20,7 +20,7 @@ export default memo(function ItemCard({ item, displayFormat, onEdit, onDelete }:
   const dailyCost = daysUsed > 0 ? netCost / daysUsed : netCost
 
   const usageText = displayFormat === 'ymd'
-    ? formatDaysAsYMD(item.purchaseDate)
+    ? formatDaysAsYMD(item.purchaseDate, endDate)
     : `${daysUsed}天`
 
   // 卖出收益（卖出价 - 购买价，正=赚，负=亏）

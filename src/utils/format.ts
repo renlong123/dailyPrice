@@ -54,23 +54,28 @@ export function formatMoney(amount: number): string {
  * 将已用天数格式化为「X年Y月Z天」的字符串
  * 与 getDaysUsed 使用相同的日期解析方式，确保一致性
  */
-export function formatDaysAsYMD(purchaseDate: string): string {
+/**
+ * 将时间差格式化为「X年Y月Z天」的字符串
+ * @param purchaseDate 起始日期
+ * @param endDate 结束日期，不传则到今天
+ */
+export function formatDaysAsYMD(purchaseDate: string, endDate?: string): string {
   const purchase = parseLocalDate(purchaseDate)
-  const today = getTodayLocal()
+  const end = endDate ? parseLocalDate(endDate) : getTodayLocal()
 
   // 未来日期：返回 0天（与 getDaysUsed 的 Math.max(0, ...) 保持一致）
-  if (purchase.getTime() > today.getTime()) {
+  if (purchase.getTime() > end.getTime()) {
     return '0天'
   }
 
-  let years = today.getFullYear() - purchase.getFullYear()
-  let months = today.getMonth() - purchase.getMonth()
-  let days = today.getDate() - purchase.getDate()
+  let years = end.getFullYear() - purchase.getFullYear()
+  let months = end.getMonth() - purchase.getMonth()
+  let days = end.getDate() - purchase.getDate()
 
   // 日期的借位处理
   if (days < 0) {
     months--
-    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0)
+    const prevMonth = new Date(end.getFullYear(), end.getMonth(), 0)
     days += prevMonth.getDate()
   }
 
