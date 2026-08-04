@@ -60,6 +60,19 @@ export default function ExpensePage({
       <StatsBar stats={stats} displayFormat={displayFormat} onToggleFormat={onToggleFormat}
         showSold={showSold} onToggleSold={() => setShowSold(!showSold)} />
       <div className="flex-1 flex flex-col min-w-0">
+        {/* 页面标题栏 */}
+        <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-100 shrink-0">
+          <h2 className="text-base font-semibold text-gray-800">💰 物品列表</h2>
+          <button
+            onClick={handleAdd}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            添加物品
+          </button>
+        </div>
         <CategoryFilter categories={categories} selected={selectedCategory} onSelect={setSelectedCategory} />
         <ItemList
           items={items} loading={loading} displayFormat={displayFormat}
