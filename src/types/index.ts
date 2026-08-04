@@ -30,3 +30,34 @@ export interface Stats {
   itemCount: number     // 物品总数
   avgDailyCost: number  // 平均日均成本
 }
+
+// ========== 待办任务 ==========
+export interface TodoTask {
+  id: number
+  name: string
+  scheduleType: 'weekly' | 'monthly'   // 按周 / 按月
+  scheduleDays: number[]               // 周：1-7（1=周一），月：1-31
+  startDate: string                    // ISO 日期，有效期起始
+  endDate: string | null               // null = 永不结束
+  completedDates: string[]             // 已完成的日期列表
+  createdAt: string                    // 创建日期
+  notes: string
+}
+
+/** 添加/编辑待办时的表单数据（不含 id） */
+export interface TodoFormData {
+  name: string
+  scheduleType: 'weekly' | 'monthly'
+  scheduleDays: number[]
+  startDate: string
+  endDate: string | null
+  notes: string
+}
+
+/** 待办统计数据 */
+export interface TodoStats {
+  totalTasks: number
+  todayTasks: number
+  todayCompleted: number
+  completionRate: number  // 0-1
+}

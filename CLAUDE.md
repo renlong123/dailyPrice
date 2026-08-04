@@ -82,9 +82,62 @@
 | name | string | 分类名称 |
 | icon | string | Emoji 图标 |
 
+### 待办任务 (TodoTask)
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | number | 自增 ID |
+| name | string | 任务名称 |
+| scheduleType | 'weekly' \| 'monthly' | 按周 / 按月循环 |
+| scheduleDays | number[] | 周：1-7（1=周一），月：1-31 |
+| startDate | string (ISO 8601) | 有效期开始日期 |
+| endDate | string \| null | 有效期结束日期，null=永不结束 |
+| completedDates | string[] | 已完成日期列表 |
+| createdAt | string (ISO 8601) | 创建日期 |
+| notes | string | 备注 |
+
+### 存储
+
+| Key | 内容 |
+|-----|------|
+| daily-expense-data | { items, categories, nextId } |
+| daily-expense-todos | { tasks, nextId } |
+| daily-expense-settings | { displayFormat } |
+
 ---
 
 ## 界面设计
+
+### 侧边栏导航
+
+```
+┌──────────┐
+│ 🏠 首页   │
+│ 💰 每日开销│
+│ ✅ 每日待办│
+└──────────┘
+```
+
+点击切换页面，当前页高亮。首页为默认页面。
+
+### 首页仪表盘
+
+```
+┌──────────────────────────────────────────────┐
+│  📅 2026年8月4日 · 周一                       │
+├────────┬────────┬────────┬───────────────────┤
+│ 总消费  │ 物品数  │ 平均日均 │ 今日待办          │
+├────────┴────────┴────────┴───────────────────┤
+│  ⚡ 快捷操作          │  ✅ 今日待办           │
+│  💰 记录新开销        │  ☑ 晨跑               │
+│  ✅ 管理待办任务       │  ☐ 读书笔记           │
+├──────────────────────────────────────────────┤
+│  📝 最近添加的物品                            │
+│  (ItemCard 列表...)                          │
+└──────────────────────────────────────────────┘
+```
+
+### 每日开销页
 
 ### 主窗口布局
 
@@ -145,12 +198,20 @@
 │   ├── types/
 │   │   └── index.ts           # TypeScript 类型定义
 │   ├── utils/
-│   │   ├── storage.ts         # localStorage 数据层（CRUD 操作）
-│   │   └── format.ts          # 日期/金额格式化工具
+│   │   ├── storage.ts         # localStorage 数据层（开销 CRUD）
+│   │   ├── format.ts          # 日期/金额格式化工具
+│   │   ├── todoStorage.ts     # localStorage 数据层（待办 CRUD）
+│   │   └── todoSchedule.ts    # 待办周期匹配/中文标签
 │   ├── hooks/
-│   │   └── useItems.ts        # 自定义 Hook（数据加载、状态管理）
+│   │   ├── useItems.ts        # 开销数据 Hook
+│   │   └── useTodos.ts        # 待办数据 Hook
+│   ├── pages/
+│   │   ├── HomePage.tsx       # 首页仪表盘
+│   │   ├── ExpensePage.tsx    # 开销记录页
+│   │   └── TodoPage.tsx       # 每日待办页
 │   └── components/
-│       ├── Layout.tsx         # 主布局（顶栏 + 主体）
+│       ├── Layout.tsx         # 主布局（顶栏 + 侧边栏 + 内容区）
+│       ├── Sidebar.tsx        # 侧边栏导航
 │       ├── StatsBar.tsx       # 左侧统计卡片
 │       ├── ItemList.tsx       # 物品列表（含空状态/加载状态）
 │       ├── ItemCard.tsx       # 单个物品卡片（含计算逻辑）
@@ -158,7 +219,11 @@
 │       ├── CategoryFilter.tsx # 分类筛选条
 │       ├── DeleteConfirm.tsx  # 删除确认弹窗
 │       ├── Modal.tsx          # 共用模态弹窗（遮罩 + Esc 关闭）
-│       └── CategoryChip.tsx   # 共用分类标签
+│       ├── CategoryChip.tsx   # 共用分类标签
+│       ├── ErrorModal.tsx     # 共用错误提示弹窗
+│       ├── TodoCard.tsx       # 待办任务卡片
+│       ├── TodoForm.tsx       # 添加/编辑待办弹窗
+│       └── TodoList.tsx       # 今日待办列表
 ```
 
 ---

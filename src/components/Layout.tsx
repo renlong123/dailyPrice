@@ -1,11 +1,14 @@
 import type { ReactNode } from 'react'
+import type { Page } from './Sidebar'
+import Sidebar from './Sidebar'
 
 interface LayoutProps {
   children: ReactNode
-  onAdd: () => void
+  activePage: Page
+  onNavigate: (page: Page) => void
 }
 
-export default function Layout({ children, onAdd }: LayoutProps) {
+export default function Layout({ children, activePage, onNavigate }: LayoutProps) {
   return (
     <div className="h-full flex flex-col bg-gray-50">
       {/* 顶部导航栏 */}
@@ -14,21 +17,15 @@ export default function Layout({ children, onAdd }: LayoutProps) {
           <span className="text-2xl">💰</span>
           <h1 className="text-lg font-semibold text-gray-800">每日开销</h1>
         </div>
-        <button
-          onClick={onAdd}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 active:bg-primary-700 transition-colors shadow-sm"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          添加物品
-        </button>
       </header>
 
-      {/* 主体内容 */}
-      <main className="flex-1 flex overflow-hidden">
-        {children}
-      </main>
+      {/* 主体：侧边栏 + 内容 */}
+      <div className="flex-1 flex overflow-hidden">
+        <Sidebar activePage={activePage} onNavigate={onNavigate} />
+        <main className="flex-1 flex overflow-hidden">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }
