@@ -20,7 +20,7 @@ export default function HomePage({ stats, recentItems, todayTasks, todoStats, di
 
   return (
     <div className="flex-1 overflow-y-auto bg-gray-50">
-      <div className="max-w-3xl mx-auto p-6 flex flex-col gap-4">
+      <div className="p-6 flex flex-col gap-4">
 
         {/* 日期问候 */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">

@@ -28,6 +28,8 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
   const [price, setPrice] = useState(item ? String(item.price) : '')
   const [purchaseDate, setPurchaseDate] = useState(item?.purchaseDate || getLocalDateStr())
   const [category, setCategory] = useState(item?.category || (categories[0]?.name || '其他'))
+  const [status, setStatus] = useState<'active' | 'sold'>(item?.status || 'active')
+  const [sellPrice, setSellPrice] = useState(item?.sellPrice != null ? String(item.sellPrice) : '')
   const [notes, setNotes] = useState(item?.notes || '')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -70,11 +72,19 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
 
     setSubmitting(true)
     try {
+      const sellPriceNum = status === 'sold' && sellPrice ? parseFloat(sellPrice) : undefined
+      if (status === 'sold' && sellPrice && (isNaN(sellPriceNum!) || sellPriceNum! <= 0)) {
+        setError('请输入有效的卖出价格')
+        return
+      }
+
       await onSubmit({
         name: name.trim(),
         price: Math.round(priceNum * 100) / 100,
         purchaseDate,
         category,
+        status,
+        sellPrice: sellPriceNum != null ? Math.round(sellPriceNum * 100) / 100 : undefined,
         notes: notes.trim(),
       })
     } catch (err) {
@@ -235,6 +245,46 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
               </div>
             )}
           </div>
+
+          {/* 物品状态 */}
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-gray-500">状态</span>
+            <div className="flex gap-2">
+              {(['active', 'sold'] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setStatus(s)}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    status === s
+                      ? s === 'active' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-amber-500 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {s === 'active' ? '🟢 使用中' : '🔴 已卖出'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 卖出价格（仅已卖出时显示） */}
+          {status === 'sold' && (
+            <label className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-gray-500">卖出价格（元）</span>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">¥</span>
+                <input
+                  type="number"
+                  value={sellPrice}
+                  onChange={(e) => setSellPrice(e.target.value)}
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0.01"
+                  className="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow"
+                />
+              </div>
+            </label>
+          )}
 
           {/* 备注 */}
           <label className="flex flex-col gap-1">

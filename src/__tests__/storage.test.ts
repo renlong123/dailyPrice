@@ -23,6 +23,7 @@ const sampleItem: Item = {
   price: 6999,
   purchaseDate: '2024-01-15',
   category: '电子设备',
+  status: 'active',
   notes: '京东购买',
 }
 

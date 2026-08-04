@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import type { Item, ItemFormData, Category, Stats } from '../types'
 import type { DisplayFormat } from '../utils/format'
 import StatsBar from '../components/StatsBar'
@@ -16,6 +16,8 @@ interface ExpensePageProps {
   stats: Stats
   displayFormat: DisplayFormat
   onToggleFormat: () => void
+  showSold: boolean
+  setShowSold: (show: boolean) => void
   addItem: (data: ItemFormData) => Promise<Item>
   updateItem: (id: number, data: ItemFormData) => Promise<void>
   deleteItem: (id: number) => Promise<void>
@@ -24,7 +26,8 @@ interface ExpensePageProps {
 
 export default function ExpensePage({
   items, categories, selectedCategory, setSelectedCategory, loading, stats,
-  displayFormat, onToggleFormat, addItem, updateItem, deleteItem, addCategory,
+  displayFormat, onToggleFormat, showSold, setShowSold,
+  addItem, updateItem, deleteItem, addCategory,
 }: ExpensePageProps) {
   const [formState, setFormState] = useState<{ open: boolean; item: Item | null }>({ open: false, item: null })
   const [deleteTarget, setDeleteTarget] = useState<Item | null>(null)
@@ -54,7 +57,8 @@ export default function ExpensePage({
 
   return (
     <>
-      <StatsBar stats={stats} displayFormat={displayFormat} onToggleFormat={onToggleFormat} />
+      <StatsBar stats={stats} displayFormat={displayFormat} onToggleFormat={onToggleFormat}
+        showSold={showSold} onToggleSold={() => setShowSold(!showSold)} />
       <div className="flex-1 flex flex-col min-w-0">
         <CategoryFilter categories={categories} selected={selectedCategory} onSelect={setSelectedCategory} />
         <ItemList

@@ -1,10 +1,15 @@
+/** 物品状态 */
+export type ItemStatus = 'active' | 'sold'
+
 // ========== 物品 ==========
 export interface Item {
   id: number
   name: string
   price: number
-  purchaseDate: string // ISO 日期字符串，如 "2024-01-15"
+  purchaseDate: string  // ISO 日期字符串，如 "2024-01-15"
   category: string
+  status: ItemStatus    // 使用中 / 已卖出
+  sellPrice?: number    // 卖出价格（仅 status=sold 时有意义）
   notes: string
 }
 
@@ -14,6 +19,8 @@ export interface ItemFormData {
   price: number
   purchaseDate: string
   category: string
+  status: ItemStatus
+  sellPrice?: number
   notes: string
 }
 

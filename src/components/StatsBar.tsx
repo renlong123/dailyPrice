@@ -6,14 +6,16 @@ interface StatsBarProps {
   stats: Stats
   displayFormat: DisplayFormat
   onToggleFormat: () => void
+  showSold: boolean
+  onToggleSold: () => void
 }
 
 const FORMAT_OPTIONS = [
-  { key: 'ymd' as const, label: '1年3月' },
-  { key: 'days' as const, label: '400天' },
+  { key: 'ymd' as const, label: '按年月日展示' },
+  { key: 'days' as const, label: '按天展示' },
 ]
 
-export default function StatsBar({ stats, displayFormat, onToggleFormat }: StatsBarProps) {
+export default function StatsBar({ stats, displayFormat, onToggleFormat, showSold, onToggleSold }: StatsBarProps) {
   return (
     <aside className="w-56 shrink-0 bg-white border-r border-gray-200 p-4 flex flex-col gap-3">
       <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
@@ -67,6 +69,19 @@ export default function StatsBar({ stats, displayFormat, onToggleFormat }: Stats
             </span>
           ))}
         </button>
+      </div>
+
+      {/* 已卖出物品开关 */}
+      <div className="p-3 bg-gray-50 rounded-xl">
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={showSold}
+            onChange={onToggleSold}
+            className="w-3.5 h-3.5 rounded border-gray-300 text-primary-500 focus:ring-primary-400"
+          />
+          <span className="text-xs text-gray-500">显示已卖出</span>
+        </label>
       </div>
 
       {/* 说明文字 */}

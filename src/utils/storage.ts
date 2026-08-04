@@ -33,7 +33,9 @@ export function loadStore(): StoreData {
     if (raw) {
       const data = JSON.parse(raw) as StoreData
       return {
-        items: Array.isArray(data.items) ? data.items : [],
+        items: Array.isArray(data.items)
+          ? data.items.map((i: Item) => ({ ...i, status: i.status || 'active' }))
+          : [],
         categories: Array.isArray(data.categories) && data.categories.length > 0
           ? data.categories
           : [...defaultCategories],
@@ -79,12 +81,15 @@ export function getItems(category?: string): Item[] {
 
 export function addItem(item: ItemFormData): { item: Item; store: StoreData } {
   const store = loadStore()
+  const status = item.status || 'active'
   const newItem: Item = {
     id: store.nextId++,
     name: item.name,
     price: Math.round(Number(item.price) * 100) / 100,
     purchaseDate: item.purchaseDate,
     category: item.category || '其他',
+    status,
+    sellPrice: status === 'sold' && item.sellPrice != null ? Math.round(Number(item.sellPrice) * 100) / 100 : undefined,
     notes: item.notes || '',
   }
   store.items.push(newItem)
@@ -96,12 +101,15 @@ export function updateItem(id: number, updates: ItemFormData): { store: StoreDat
   const store = loadStore()
   const index = store.items.findIndex((i) => i.id === id)
   if (index === -1) throw new Error(`物品 ID ${id} 不存在`)
+  const status = updates.status || 'active'
   store.items[index] = {
     ...store.items[index],
     name: updates.name,
     price: Math.round(Number(updates.price) * 100) / 100,
     purchaseDate: updates.purchaseDate,
     category: updates.category || '其他',
+    status,
+    sellPrice: status === 'sold' && updates.sellPrice != null ? Math.round(Number(updates.sellPrice) * 100) / 100 : undefined,
     notes: updates.notes || '',
   }
   saveStore(store)

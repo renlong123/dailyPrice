@@ -10,13 +10,14 @@ import {
 } from '../utils/storage'
 import { getDailyCost } from '../utils/format'
 
-/** 始终基于全部物品计算全局统计 */
+/** 基于使用中的物品计算统计 */
 function computeStats(items: Item[]): Stats {
-  const totalSpent = items.reduce((sum, item) => sum + item.price, 0)
-  const itemCount = items.length
+  const activeItems = items.filter((i) => i.status !== 'sold')
+  const totalSpent = activeItems.reduce((sum, item) => sum + item.price, 0)
+  const itemCount = activeItems.length
 
   let totalDailyCost = 0
-  items.forEach((item) => {
+  activeItems.forEach((item) => {
     totalDailyCost += getDailyCost(item.price, item.purchaseDate)
   })
 
@@ -34,9 +35,9 @@ export function useItems() {
   const [allItems, setAllItems] = useState<Item[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [showSold, setShowSold] = useState(false)  // 是否显示已卖出物品
   const [loading, setLoading] = useState(true)
 
-  // 一次性加载全部数据
   const loadData = useCallback(() => {
     try {
       const store = loadStore()
@@ -53,7 +54,6 @@ export function useItems() {
     loadData()
   }, [loadData])
 
-  // 多标签页同步：监听其他标签页的 storage 变更
   useEffect(() => {
     const handler = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY && e.newValue) {
@@ -64,9 +64,12 @@ export function useItems() {
     return () => window.removeEventListener('storage', handler)
   }, [loadData])
 
-  // 根据筛选条件过滤 + 排序（排序在内存中完成，不需要每次重新解析）
+  // 筛选 + 排序（默认隐藏已卖出）
   const items = useMemo(() => {
     let result = allItems
+    if (!showSold) {
+      result = result.filter((i) => i.status !== 'sold')
+    }
     if (selectedCategory) {
       result = result.filter((i) => i.category === selectedCategory)
     }
@@ -75,12 +78,11 @@ export function useItems() {
       const db = new Date(b.purchaseDate + 'T00:00:00').getTime()
       return db - da
     })
-  }, [allItems, selectedCategory])
+  }, [allItems, selectedCategory, showSold])
 
-  // 统计数据始终基于全部物品（不受筛选影响）
+  // 统计数据始终基于使用中的物品
   const stats = useMemo(() => computeStats(allItems), [allItems])
 
-  // 添加物品：storage 返回更新后的 store，直接设入 state 避免重复解析
   const addItem = useCallback(async (formData: ItemFormData) => {
     const { item, store } = storageAddItem(formData)
     setAllItems(store.items)
@@ -88,21 +90,18 @@ export function useItems() {
     return item
   }, [])
 
-  // 更新物品
   const updateItem = useCallback(async (id: number, formData: ItemFormData) => {
     const { store } = storageUpdateItem(id, formData)
     setAllItems(store.items)
     setCategories(store.categories)
   }, [])
 
-  // 删除物品
   const deleteItem = useCallback(async (id: number) => {
     const { store } = storageDeleteItem(id)
     setAllItems(store.items)
     setCategories(store.categories)
   }, [])
 
-  // 添加分类
   const addCategory = useCallback(async (name: string, icon?: string) => {
     const { category, store } = storageAddCategory(name, icon)
     setAllItems(store.items)
@@ -115,6 +114,8 @@ export function useItems() {
     categories,
     selectedCategory,
     setSelectedCategory,
+    showSold,
+    setShowSold,
     loading,
     stats,
     addItem,

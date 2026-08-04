@@ -102,6 +102,8 @@ export default function App() {
           stats={expenseData.stats}
           displayFormat={displayFormat}
           onToggleFormat={toggleFormat}
+          showSold={expenseData.showSold}
+          setShowSold={expenseData.setShowSold}
           addItem={expenseData.addItem}
           updateItem={expenseData.updateItem}
           deleteItem={safeDeleteItem}
