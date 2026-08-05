@@ -10,51 +10,67 @@ interface TodoCalendarProps {
   onSelectDate: (dateStr: string) => void
 }
 
-const CIRCLE_R = 5.5
-const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_R  // ≈ 34.56
+const SIZE = 24
+const CX = 12
+const CIRCLE_R = 9
+const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_R  // ≈ 56.55
 
-function RingCell({ rate, dueCount, isToday }: { rate: number; dueCount: number; isToday: boolean }) {
-  // 无任务：浅灰空心圈
+function RingCell({ day, rate, dueCount, isToday, isSel }: {
+  day: number; rate: number; dueCount: number; isToday: boolean; isSel: boolean
+}) {
   if (dueCount === 0) {
     return (
-      <svg width="16" height="16" viewBox="0 0 16 16" className="block">
-        <circle cx="8" cy="8" r={CIRCLE_R} fill="none" stroke="#e5e7eb" strokeWidth="1" />
+      <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="block">
+        <circle cx={CX} cy={CX} r={CIRCLE_R} fill="none" stroke="#e5e7eb" strokeWidth="1" />
+        <text x={CX} y={CX + 1} textAnchor="middle" dominantBaseline="central"
+          fill="#9ca3af" fontSize="9" fontWeight={isToday ? 600 : 400}>
+          {day}
+        </text>
       </svg>
     )
   }
 
-  // 颜色：绿 ≥100%，黄 ≥50%，红 >0%
-  let color = '#ef4444'  // red
-  if (rate >= 1) color = '#10b981'      // green
-  else if (rate >= 0.5) color = '#f59e0b'  // yellow
+  let color = '#ef4444'
+  let bg = '#fef2f2'
+  if (rate >= 1) { color = '#10b981'; bg = '#ecfdf5' }
+  else if (rate >= 0.5) { color = '#f59e0b'; bg = '#fffbeb' }
 
-  const dashOffset = CIRCUMFERENCE * (1 - Math.max(0.05, rate))  // min 5% visible if >0
+  const dashOffset = CIRCUMFERENCE * (1 - Math.max(0.05, rate))
 
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" className="block">
-      {/* 背景圈 */}
-      <circle cx="8" cy="8" r={CIRCLE_R} fill="none" stroke="#e5e7eb" strokeWidth="1.5" />
+    <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="block">
+      {/* 选中高亮背景 */}
+      {isSel && (
+        <circle cx={CX} cy={CX} r={CIRCLE_R + 1.5} fill="#dbeafe" />
+      )}
+      {/* 底色圈 */}
+      <circle cx={CX} cy={CX} r={CIRCLE_R} fill={bg} stroke="#e5e7eb" strokeWidth="1" />
       {/* 进度弧 */}
       <circle
-        cx="8" cy="8" r={CIRCLE_R}
+        cx={CX} cy={CX} r={CIRCLE_R}
         fill="none"
         stroke={color}
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeDasharray={CIRCUMFERENCE}
         strokeDashoffset={dashOffset}
-        transform="rotate(-90 8 8)"
+        transform={`rotate(-90 ${CX} ${CX})`}
         style={{ transition: 'stroke-dashoffset 0.3s, stroke 0.3s' }}
       />
-      {/* 今日标记 */}
-      {isToday && (
-        <circle cx="8" cy="8" r="2" fill="#3b82f6" />
+      {/* 今日外环 */}
+      {isToday && !isSel && (
+        <circle cx={CX} cy={CX} r={CIRCLE_R + 1} fill="none" stroke="#3b82f6" strokeWidth="1.5" />
       )}
+      {/* 日期数字 */}
+      <text x={CX} y={CX + 0.5} textAnchor="middle" dominantBaseline="central"
+        fill={isToday && !isSel ? '#2563eb' : (dueCount > 0 ? '#374151' : '#9ca3af')}
+        fontSize="9" fontWeight={isToday ? 700 : 500}>
+        {day}
+      </text>
     </svg>
   )
 }
 
-/** 单月迷你日历 */
 function MonthBlock({
   year, month, tasks, todayStr, selectedDate, onSelectDate,
 }: {
@@ -75,20 +91,17 @@ function MonthBlock({
   ]
 
   return (
-    <div className="flex flex-col items-center">
-      {/* 月份名 */}
-      <div className="text-xs font-medium text-gray-500 mb-1">{getMonthName(month)}</div>
-      {/* 星期头 */}
-      <div className="grid grid-cols-7 gap-px mb-0.5">
+    <div className="flex flex-col">
+      <div className="text-xs font-semibold text-gray-600 mb-1 ml-0.5">{getMonthName(month)}</div>
+      <div className="grid grid-cols-7 gap-1">
         {['日','一','二','三','四','五','六'].map((h) => (
-          <div key={h} className="w-4 text-center text-[10px] text-gray-300 leading-tight">{h}</div>
+          <div key={h} className="flex items-center justify-center">
+            <span className="text-[10px] text-gray-300 w-6 text-center">{h}</span>
+          </div>
         ))}
-      </div>
-      {/* 日期格 */}
-      <div className="grid grid-cols-7 gap-0.5">
         {cells.map((day, i) => (
-          <div key={i} className="w-4 h-4 flex items-center justify-center">
-            {day !== null && (() => {
+          <div key={i} className="flex items-center justify-center">
+            {day !== null ? (() => {
               const comp = completions[day - 1]
               const isToday = comp.dateStr === todayStr
               const isSel = comp.dateStr === selectedDate
@@ -96,14 +109,18 @@ function MonthBlock({
                 <button
                   onClick={() => onSelectDate(comp.dateStr)}
                   title={`${comp.dateStr}\n${comp.completedCount}/${comp.dueCount} 完成`}
-                  className={`rounded-full transition-all hover:scale-125 ${
-                    isSel ? 'ring-1 ring-primary-400 ring-offset-0' : ''
-                  }`}
+                  className="rounded-full transition-transform hover:scale-110"
                 >
-                  <RingCell rate={comp.rate} dueCount={comp.dueCount} isToday={isToday} />
+                  <RingCell
+                    day={day}
+                    rate={comp.rate}
+                    dueCount={comp.dueCount}
+                    isToday={isToday}
+                    isSel={isSel}
+                  />
                 </button>
               )
-            })()}
+            })() : <div className="w-6 h-6" />}
           </div>
         ))}
       </div>
@@ -113,9 +130,9 @@ function MonthBlock({
 
 export default function TodoCalendar({ year, tasks, selectedDate, todayStr, onSelectDate }: TodoCalendarProps) {
   return (
-    <div className="flex-1 overflow-y-auto p-4">
-      <div className="text-sm font-semibold text-gray-700 text-center mb-3">{year}年</div>
-      <div className="grid grid-cols-4 gap-x-3 gap-y-4 max-w-2xl mx-auto">
+    <div className="flex-1 overflow-y-auto p-5">
+      <div className="text-base font-semibold text-gray-700 text-center mb-4">{year}年</div>
+      <div className="grid grid-cols-4 gap-x-6 gap-y-5 px-2">
         {Array.from({ length: 12 }, (_, m) => (
           <MonthBlock
             key={m}
@@ -130,7 +147,7 @@ export default function TodoCalendar({ year, tasks, selectedDate, todayStr, onSe
       </div>
 
       {/* 图例 */}
-      <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-500">
+      <div className="flex items-center justify-center gap-5 mt-5 text-xs text-gray-500 pb-2">
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-emerald-500" /> 全部完成
         </span>
@@ -141,8 +158,7 @@ export default function TodoCalendar({ year, tasks, selectedDate, todayStr, onSe
           <span className="w-3 h-3 rounded-full bg-red-500" /> &lt;50%
         </span>
         <span className="flex items-center gap-1">
-          <svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4" fill="none" stroke="#e5e7eb" strokeWidth="1"/></svg>
-          无任务
+          <span className="w-3 h-3 rounded-full border border-gray-300 bg-white" /> 无任务
         </span>
       </div>
     </div>
