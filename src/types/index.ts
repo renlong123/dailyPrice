@@ -38,9 +38,9 @@ export interface Category {
 
 // ========== 统计数据 ==========
 export interface Stats {
-  totalSpent: number    // 总消费金额
-  itemCount: number     // 物品总数
-  avgDailyCost: number  // 平均日均成本
+  totalSpent: number      // 总消费金额
+  itemCount: number       // 物品总数
+  totalDailyCost: number  // 每日总成本
 }
 
 // ========== 待办任务 ==========

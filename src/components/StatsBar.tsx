@@ -38,11 +38,11 @@ export default function StatsBar({ stats, displayFormat, onToggleFormat, showSol
         </p>
       </div>
 
-      {/* 平均日均成本 */}
+      {/* 每日总成本 */}
       <div className="p-3 bg-emerald-50 rounded-xl">
-        <p className="text-xs text-emerald-600 mb-0.5">平均日均成本</p>
+        <p className="text-xs text-emerald-600 mb-0.5">每日总成本</p>
         <p className="text-xl font-bold text-emerald-700">
-          {formatMoney(stats.avgDailyCost)}
+          {formatMoney(stats.totalDailyCost)}
           <span className="text-xs font-normal text-emerald-500">/天</span>
         </p>
       </div>
@@ -86,7 +86,7 @@ export default function StatsBar({ stats, displayFormat, onToggleFormat, showSol
 
       {/* 说明文字 */}
       <p className="text-xs text-gray-400 leading-relaxed mt-auto">
-        日均成本 = 物品价格 ÷ 已使用天数。数值越低说明物品使用越划算。
+        每日总成本 = 所有使用中物品的日均成本之和。
       </p>
     </aside>
   )

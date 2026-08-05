@@ -42,7 +42,7 @@ export default function HomePage({ stats, recentItems, todayTasks, todoStats, di
           </div>
           <div className="p-3 bg-white rounded-xl border border-gray-200">
             <p className="text-xs text-emerald-600 mb-0.5">📊 平均日均</p>
-            <p className="text-lg font-bold text-emerald-700">{formatMoney(stats.avgDailyCost)}<span className="text-xs font-normal">/天</span></p>
+            <p className="text-lg font-bold text-emerald-700">{formatMoney(stats.totalDailyCost)}<span className="text-xs font-normal">/天</span></p>
           </div>
           <div className="p-3 bg-white rounded-xl border border-gray-200">
             <p className="text-xs text-emerald-600 mb-0.5">✅ 今日待办</p>

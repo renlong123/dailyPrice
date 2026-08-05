@@ -21,12 +21,10 @@ function computeStats(items: Item[]): Stats {
     totalDailyCost += getDailyCost(item.price, item.purchaseDate)
   })
 
-  const avgDailyCost = itemCount > 0 ? totalDailyCost / itemCount : 0
-
   return {
     totalSpent: Math.round(totalSpent * 100) / 100,
     itemCount,
-    avgDailyCost: Math.round(avgDailyCost * 100) / 100,
+    totalDailyCost: Math.round(totalDailyCost * 100) / 100,
   }
 }
 
