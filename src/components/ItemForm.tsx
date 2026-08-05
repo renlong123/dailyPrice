@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Item, ItemFormData, Category } from '../types'
-import { defaultEmojis } from '../utils/storage'
+import { defaultEmojis, itemIconOptions, DEFAULT_ITEM_ICON } from '../utils/storage'
 import Modal from './Modal'
 import CategoryChip from './CategoryChip'
 
@@ -24,6 +24,7 @@ function getLocalDateStr(): string {
 export default function ItemForm({ item, categories, onSubmit, onClose, onAddCategory }: ItemFormProps) {
   const isEdit = item !== null
 
+  const [icon, setIcon] = useState(item?.icon || DEFAULT_ITEM_ICON)
   const [name, setName] = useState(item?.name || '')
   const [price, setPrice] = useState(item ? String(item.price) : '')
   const [purchaseDate, setPurchaseDate] = useState(item?.purchaseDate || getLocalDateStr())
@@ -81,6 +82,7 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
 
       await onSubmit({
         name: name.trim(),
+        icon,
         price: Math.round(priceNum * 100) / 100,
         purchaseDate,
         category,
@@ -141,6 +143,25 @@ export default function ItemForm({ item, categories, onSubmit, onClose, onAddCat
               {error}
             </div>
           )}
+
+          {/* 图标选择 */}
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium text-gray-500">图标</span>
+            <div className="flex flex-wrap gap-1">
+              {itemIconOptions.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => setIcon(emoji)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-lg transition-colors ${
+                    icon === emoji ? 'bg-primary-200 ring-2 ring-primary-400' : 'hover:bg-gray-100'
+                  }`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* 物品名称 */}
           <label className="flex flex-col gap-1">

@@ -20,6 +20,7 @@ import type { Item, ItemFormData, StoreData } from '../utils/storage'
 const sampleItem: Item = {
   id: 1,
   name: 'iPhone 15 Pro',
+  icon: '📱',
   price: 6999,
   purchaseDate: '2024-01-15',
   category: '电子设备',

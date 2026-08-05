@@ -37,6 +37,7 @@ export default memo(function ItemCard({ item, displayFormat, onEdit, onDelete }:
         <div className="flex-1 min-w-0">
           {/* 第一行：名称 + 状态标签 + 分类标签 */}
           <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg shrink-0">{item.icon}</span>
             <h3 className={`text-sm font-semibold truncate ${isSold ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
               {item.name}
             </h3>

@@ -5,6 +5,7 @@ export type ItemStatus = 'active' | 'sold'
 export interface Item {
   id: number
   name: string
+  icon: string           // emoji 图标
   price: number
   purchaseDate: string  // ISO 日期字符串，如 "2024-01-15"
   category: string
@@ -17,6 +18,7 @@ export interface Item {
 // 添加/编辑物品时的表单数据（不含 id）
 export interface ItemFormData {
   name: string
+  icon: string
   price: number
   purchaseDate: string
   category: string

@@ -19,6 +19,12 @@ export const defaultEmojis = defaultCategories.map((c) => c.icon)
 /** 新增分类的默认图标 */
 export const DEFAULT_CATEGORY_ICON = '📌'
 
+/** 物品默认图标 */
+export const DEFAULT_ITEM_ICON = '📦'
+
+/** 物品可选图标列表 */
+export const itemIconOptions = ['📱', '💻', '⌚', '🎧', '📷', '🖥️', '🎮', '📺', '🎵', '📚', '👕', '👟', '👜', '💄', '⌨️', '🖱️', '🏠', '🛋️', '🍔', '☕', '🚗', '🚌', '✈️', '💊', '⚽', '🏀', '🎸', '💡', '🔧', '📦']
+
 // ========== 数据结构 ==========
 export interface StoreData {
   items: Item[]
@@ -34,7 +40,7 @@ export function loadStore(): StoreData {
       const data = JSON.parse(raw) as StoreData
       return {
         items: Array.isArray(data.items)
-          ? data.items.map((i: Item) => ({ ...i, status: i.status || 'active' }))
+          ? data.items.map((i: Item) => ({ ...i, icon: i.icon || DEFAULT_ITEM_ICON, status: i.status || 'active' }))
           : [],
         categories: Array.isArray(data.categories) && data.categories.length > 0
           ? data.categories
@@ -85,6 +91,7 @@ export function addItem(item: ItemFormData): { item: Item; store: StoreData } {
   const newItem: Item = {
     id: store.nextId++,
     name: item.name,
+    icon: item.icon || DEFAULT_ITEM_ICON,
     price: Math.round(Number(item.price) * 100) / 100,
     purchaseDate: item.purchaseDate,
     category: item.category || '其他',
@@ -106,6 +113,7 @@ export function updateItem(id: number, updates: ItemFormData): { store: StoreDat
   store.items[index] = {
     ...store.items[index],
     name: updates.name,
+    icon: updates.icon || DEFAULT_ITEM_ICON,
     price: Math.round(Number(updates.price) * 100) / 100,
     purchaseDate: updates.purchaseDate,
     category: updates.category || '其他',
