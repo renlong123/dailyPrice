@@ -36,6 +36,9 @@ export default function TodoPage({ allTasks, todayTasks, loading, todoStats, add
   const [calYear, setCalYear] = useState(new Date().getFullYear())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
+  const prevYear = () => setCalYear((y) => y - 1)
+  const nextYear = () => setCalYear((y) => y + 1)
+
   const handleAdd = useCallback(() => setFormState({ open: true, task: null }), [])
   const handleEdit = useCallback((task: TodoTask) => setFormState({ open: true, task }), [])
 
@@ -147,6 +150,8 @@ export default function TodoPage({ allTasks, todayTasks, loading, todoStats, add
           selectedDate={selectedDate}
           todayStr={today}
           onSelectDate={setSelectedDate}
+          onPrevYear={prevYear}
+          onNextYear={nextYear}
         />
       )}
 
