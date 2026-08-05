@@ -34,7 +34,6 @@ export default function TodoPage({ allTasks, todayTasks, loading, todoStats, add
 
   // 日历状态
   const [calYear, setCalYear] = useState(new Date().getFullYear())
-  const [calMonth, setCalMonth] = useState(new Date().getMonth())  // 0-11
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
   const handleAdd = useCallback(() => setFormState({ open: true, task: null }), [])
@@ -61,15 +60,6 @@ export default function TodoPage({ allTasks, todayTasks, loading, todoStats, add
       setDeleteTarget(null)
     }
   }, [deleteTarget, deleteTodo])
-
-  // 日历导航
-  const prevMonth = () => setCalMonth((m) => m === 0 ? (setCalYear((y) => y - 1), 11) : m - 1)
-  const nextMonth = () => setCalMonth((m) => m === 11 ? (setCalYear((y) => y + 1), 0) : m + 1)
-  const goToday = () => {
-    const d = new Date()
-    setCalYear(d.getFullYear())
-    setCalMonth(d.getMonth())
-  }
 
   // 选中日期的任务
   const selectedTasks = selectedDate
@@ -103,14 +93,6 @@ export default function TodoPage({ allTasks, todayTasks, loading, todoStats, add
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {viewMode === 'calendar' && (
-            <button
-              onClick={goToday}
-              className="px-3 py-2 text-xs font-medium text-gray-500 hover:text-primary-600 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              今天
-            </button>
-          )}
           <button
             onClick={handleAdd}
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-500 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors shadow-sm"
@@ -161,13 +143,10 @@ export default function TodoPage({ allTasks, todayTasks, loading, todoStats, add
       ) : (
         <TodoCalendar
           year={calYear}
-          month={calMonth}
           tasks={allTasks}
           selectedDate={selectedDate}
           todayStr={today}
           onSelectDate={setSelectedDate}
-          onPrevMonth={prevMonth}
-          onNextMonth={nextMonth}
         />
       )}
 
