@@ -80,10 +80,10 @@ export function useTodos() {
     setAllTasks(store.tasks)
   }, [])
 
-  // 切换完成状态
-  const toggleTodo = useCallback(async (id: number) => {
-    const today = getLocalDateStr()
-    const { store } = storageToggleComplete(id, today)
+  // 切换完成状态（默认今天，可指定日期）
+  const toggleTodo = useCallback(async (id: number, dateStr?: string) => {
+    const date = dateStr || getLocalDateStr()
+    const { store } = storageToggleComplete(id, date)
     setAllTasks(store.tasks)
   }, [])
 

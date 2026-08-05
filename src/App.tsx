@@ -115,6 +115,7 @@ export default function App() {
 
       {currentPage === 'todos' && (
         <TodoPage
+          allTasks={todoData.allTasks}
           todayTasks={todoData.todayTasks}
           loading={todoData.loading}
           todoStats={todoData.todoStats}
