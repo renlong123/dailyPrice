@@ -14,7 +14,7 @@ export default defineConfig({
         name: '每日开销',
         short_name: '每日开销',
         description: '记录物品支出，管理每日待办',
-        theme_color: '#3b82f6',
+        theme_color: '#f9fafb',
         background_color: '#f9fafb',
         display: 'standalone',
         orientation: 'any',
