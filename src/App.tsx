@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useItems } from './hooks/useItems'
 import { useTodos } from './hooks/useTodos'
+import { useMidnightRefresh } from './hooks/useMidnightRefresh'
 import type { DisplayFormat } from './utils/format'
 import type { Page } from './components/Sidebar'
 import Layout from './components/Layout'
@@ -33,6 +34,12 @@ function saveFormat(format: DisplayFormat) {
 export default function App() {
   const expenseData = useItems()
   const todoData = useTodos()
+
+  // 跨天自动刷新
+  useMidnightRefresh(() => {
+    expenseData.refresh()
+    todoData.refresh()
+  })
 
   // 页面导航
   const [currentPage, setCurrentPage] = useState<Page>('home')
