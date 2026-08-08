@@ -59,16 +59,18 @@ export default memo(function ItemCard({ item, displayFormat, onEdit, onDelete }:
             )}
           </div>
 
-          {/* 第三行：已用时间、日均成本（已卖出显示卖出信息） */}
+          {/* 第三行：已用时间、总价 */}
           <div className="flex items-center gap-3">
             {isSold ? (
               <>
                 <span className="inline-flex items-center gap-1 text-xs text-gray-500">
                   <span className="text-gray-400">使用</span>
                   <span className="font-semibold text-gray-700">{usageText}</span>
-                  <span className="text-gray-300">·</span>
-                  <span className="text-gray-500">日均</span>
-                  <span className="font-semibold text-amber-600">{formatMoney(dailyCost)}</span>
+                </span>
+                <span className="text-gray-300">|</span>
+                <span className="inline-flex items-center gap-1 text-xs">
+                  <span className="text-gray-400">总价</span>
+                  <span className="font-semibold text-gray-700">{formatMoney(item.price)}</span>
                 </span>
                 <span className="text-gray-300">|</span>
                 <span className="inline-flex items-center gap-1 text-xs">
@@ -92,21 +94,20 @@ export default memo(function ItemCard({ item, displayFormat, onEdit, onDelete }:
                   <span className="font-semibold text-gray-700">{usageText}</span>
                 </span>
                 <span className="text-gray-300">|</span>
-                <span className="inline-flex items-center gap-1 text-xs">
-                  <span className="text-gray-400">日均</span>
-                  <span className="font-semibold text-emerald-600">
-                    {formatMoney(dailyCost)}
-                  </span>
+                <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+                  <span className="text-gray-400">总价</span>
+                  <span className="font-semibold text-gray-700">{formatMoney(item.price)}</span>
                 </span>
               </>
             )}
           </div>
         </div>
 
-        {/* 右侧：价格 + 操作按钮 */}
+        {/* 右侧：日均成本 + 操作按钮 */}
         <div className="flex flex-col items-end gap-2 shrink-0">
-          <span className={`text-lg font-bold ${isSold ? 'text-gray-400' : 'text-gray-800'}`}>
-            {formatMoney(item.price)}
+          <span className={`text-lg font-bold ${isSold ? 'text-amber-600' : 'text-emerald-600'}`}>
+            {formatMoney(dailyCost)}
+            <span className="text-xs font-normal ml-0.5">/天</span>
           </span>
 
           {/* 操作按钮 — hover 时显示 */}
